@@ -1,0 +1,61 @@
+FUNCTION_BLOCK
+
+VAR_INPUT
+arriving_vehicle: REAL;
+queuing_vehicle : REAL;
+fog: REAL;
+END_VAR
+
+VAR_OUTPUT
+green_light: REAL;
+END_VAR
+
+FUZZIFY arriving_vehicle
+TERM few := (0, 1) (2, 1) (4, 0.5) (6,0.25) (8, 0);
+TERM medium := (2, 0) (4, 0.5) (6, 1) (8, 1) (10, 0.5) (12, 0);
+TERM many := (8, 0) (10, 0.5) (12, 1) (16, 1);
+END_FUZZIFY
+
+FUZZIFY queuing_vehicle
+TERM few := (0, 1) (4, 1) (8, 0.5) (12, 0);
+TERM medium := (4, 0) (8, 0.5) (12, 1) (24, 1) (28, 0.5) (32, 0) (36, 0);
+TERM many := (24, 0) (28, 0.5) (32, 1) (48, 1);
+END_FUZZIFY
+
+FUZZIFY fog
+TERM small := (0, 1) (10, 1) (20, 0.5) (30, 0);
+TERM medium := (10, 0) (20, 0.5) (30, 1) (50, 1) (60, 0.5) (70, 0);
+TERM high := (50, 0) (60, 0.50) (70, 1) (80, 1) (100, 1);
+END_FUZZIFY
+
+DEFUZZIFY green_light
+TERM short := (0, 1) (3, 1) (6, 1) (9, 0.5) (12, 0);
+TERM medium := (6, 0) (9, 0.5) (12, 1) (18, 1) (21, 0.50) (24, 0);
+TERM long := (18, 0) (21, 0.5) (24, 1) (30, 1);
+METHOD : COG;
+DEFAULT := 10;
+END_DEFUZZIFY
+
+RULEBLOCK first
+AND: MIN;
+ACT: MIN;
+RULE 0: IF fog IS high THEN green_light IS long;
+RULE 1: IF queuing_vehicle IS few AND arriving_vehicle IS few AND fog is small THEN green_light IS short;
+RULE 2: IF queuing_vehicle IS few AND arriving_vehicle IS few AND fog is medium THEN green_light IS medium;
+RULE 3: IF arriving_vehicle IS many AND queuing_vehicle IS many THEN green_light IS long;
+RULE 4: IF queuing_vehicle IS many AND arriving_vehicle IS medium THEN green_light IS long;
+RULE 5: IF queuing_vehicle IS medium AND arriving_vehicle IS few AND fog is small THEN green_light IS medium;
+RULE 6: IF queuing_vehicle IS medium AND arriving_vehicle IS few AND fog is medium THEN green_light IS long;
+RULE 7: IF queuing_vehicle IS many AND arriving_vehicle IS few AND fog is small THEN green_light IS short;
+RULE 8: IF queuing_vehicle IS many AND arriving_vehicle IS few AND fog is medium THEN green_light IS medium;
+RULE 9: IF queuing_vehicle IS medium AND arriving_vehicle IS medium AND fog is small THEN green_light IS medium;
+RULE 10: IF queuing_vehicle IS medium AND arriving_vehicle IS medium AND fog is medium THEN green_light IS medium;
+RULE 11: IF queuing_vehicle IS few AND arriving_vehicle IS medium AND fog is small THEN green_light IS short;
+RULE 12: IF queuing_vehicle IS few AND arriving_vehicle IS medium AND fog is medium THEN green_light IS medium;
+RULE 13: IF queuing_vehicle IS medium AND arriving_vehicle IS many AND fog is small THEN green_light IS medium;
+RULE 14: IF queuing_vehicle IS medium AND arriving_vehicle IS many AND fog is medium THEN green_light IS medium;
+RULE 15: IF queuing_vehicle IS few AND arriving_vehicle IS many AND fog is small THEN green_light IS short;
+RULE 16: IF queuing_vehicle IS few AND arriving_vehicle IS many AND fog is medium THEN green_light IS medium;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
